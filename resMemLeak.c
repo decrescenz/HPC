@@ -271,8 +271,8 @@ double *QRCalc(int n, double *X){
 void main(int argc, char *argv[]){
     int size = atoi(argv[1]);
 
-    double *aref;
-    double *bref;
+   // double *aref;
+   // double *bref;
 
    // aref = generate_matrix(size);        
    // bref = generate_matrix(size);
