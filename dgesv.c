@@ -6,11 +6,10 @@
 
 double *generate_matrix(int size)
 {
-    int i;
-    double *matrix = (double *)malloc(sizeof(double) * size * size);
+    double * matrix = (double *)malloc(sizeof(double) * size * size);
     srand(1);
 
-    for (i = 0; i < size * size; i++)
+    for (int i = 0; i < size * size; i++)
     {
         matrix[i] = rand() % 100;
     }
@@ -40,7 +39,6 @@ int check_result(double *bref, double *b, int size) {
     }
     return 1;
 }
-
 
 //create a null matrix of size size*size
 double *generate_matrixNull(int size)
@@ -104,13 +102,9 @@ double vectorialProduct(double *v1, double *v2, int n){
 	return res;
 }
 
-
 // get the column indice of a matrix named matrix of size n*n
 double *getColumn(double *matrix, int indice, int n){
 	double *res=generate_matrixColumn(n);
-	for (int i=0;i<n;i++){
-		res[i]=0;
-	}
 	for (int i=0;i<n;i++) {
 		res[i] = matrix[indice + i*n];
 	}
@@ -169,26 +163,28 @@ double *matricialProduct(double *a,double *b, int n){
 	return res;
 }
 
+
 // calculate the QR decomposition of a matrix A of size n*n and solve the system QRX = B
-double *QRCalc(int n, double *A, double *B){
+double *QRCalc(int n, double *X){
 	// initialise variables
-	double *Q = generate_matrixNull(n);
-	double *R = generate_matrix(n);
-	double *p = generate_matrixNull(n);
+  double * A = generate_matrix(n);
+  double * B = generate_matrix(n);
+  double * R = generate_matrix(n);
+  double *Q = generate_matrixNull(n);
+  double *p = generate_matrixNull(n);
 	double *restest = generate_matrixNull(n);
 	double norm = 0;
-	double *tmp = getColumn(A,0,n);
-	norm = norm2(tmp,n);
+  double *tmp = getColumn(A,0,n);
+  norm = norm2(tmp,n);
 	R[0] = norm;
 	restest[0] = norm;
 	int nb_op = 2*n-1;
 	// calculate Q and R
 	double *col1Q = calcDiv(tmp,norm,n);
-	for (int i=0;i<n;i++){
+  for (int i=0;i<n;i++){
 		Q[i + i*(n-1)] = col1Q[i];
 	}
-	
-	nb_op = nb_op + n;
+  nb_op = nb_op + n;
 	for (int i=0;i<(n-1);i++){
 		double *colA = getColumn(A,i+1,n);
 		int acc = i + 1;
@@ -217,6 +213,10 @@ double *QRCalc(int n, double *A, double *B){
 				acc = acc + (n - 1);
 			}
 			nb_op = nb_op + 3*n;
+      free(colQ);
+      free(premiereetape);
+      free(deuxiemeetape);
+      free(colp);
 		}
 		double *colp = getColumn(p,i+1,n);
 		R[i*2+3] = norm2(colp,n);
@@ -233,9 +233,13 @@ double *QRCalc(int n, double *A, double *B){
     		acc2 = acc2 + (n - 1);
     	}
     	nb_op = nb_op + n;
+      free(colA);
+      free(colp);
+      free(colq);
+      free(premierres);
     }
+
 	//calculate the value of X
-	double *X = generate_matrixNull(n);
 	double *Qtransposer = transpose(Q,n);
 	double *QtransposerB = matricialProduct(Qtransposer,B,n);
 	for (int j=n-1;j>=0;--j){
@@ -249,40 +253,25 @@ double *QRCalc(int n, double *A, double *B){
 			}
 		}
 	}
+
+  free(A);
+  free(B);
+  free(R);
+  free(Q);
+  free(p);
+  free(restest);
+  free(tmp);
+  free(col1Q);
+  free(Qtransposer);
+  free(QtransposerB);
 	return X;
 }
 
 
-    void main(int argc, char *argv[])
-    {
-
-        int size = atoi(argv[1]);
-
-        double *a, *aref;
-        double *b, *bref;
-
-        a = generate_matrix(size);
-        aref = generate_matrix(size);        
-        b = generate_matrix(size);
-        bref = generate_matrix(size);
-
-        // Using MKL to solve the system
-        MKL_INT n = size, nrhs = size, lda = size, ldb = size, info;
-        MKL_INT *ipiv = (MKL_INT *)malloc(sizeof(MKL_INT)*size);
-
-        clock_t tStart = clock();
-        info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, aref, lda, ipiv, bref, ldb);
-        printf("Time taken by MKL: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
-
-        tStart = clock();    
-        double *X = QRCalc(atoi(argv[1]),a,b);
-        printf("Time taken by my implementation: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
-        
-        if (check_result(bref,X,size)==1)
-            printf("Result is ok!\n");
-        else    
-            printf("Result is wrong!\n");
-        
-        print_matrix("X", X, size);
-        print_matrix("Xref", bref, size);
-    }
+void main(int argc, char *argv[]){
+    int size = atoi(argv[1]);
+    double *X  = generate_matrixNull(size);
+    X = QRCalc(size ,X );
+    print_matrix("X",X,size);
+    free(X);
+}
