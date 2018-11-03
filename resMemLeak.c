@@ -270,8 +270,33 @@ double *QRCalc(int n, double *X){
 
 void main(int argc, char *argv[]){
     int size = atoi(argv[1]);
-    double *X  = generate_matrixNull(size);
-    X = QRCalc(size ,X );
-    print_matrix("X",X,size);
-    free(X);
+
+    double *aref;
+    double *bref;
+
+   // aref = generate_matrix(size);        
+   // bref = generate_matrix(size);
+
+   // Using MKL to solve the system
+   // MKL_INT n = size, nrhs = size, lda = size, ldb = size, info;
+   // MKL_INT *ipiv = (MKL_INT *)malloc(sizeof(MKL_INT)*size);
+
+   // clock_t tStart = clock();
+   // info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, aref, lda, ipiv, bref, ldb);
+   // printf("Time taken by MKL: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
+
+   // tStart = clock(); 
+   double *X  = generate_matrixNull(size);   
+   X = QRCalc(size,X);
+   // printf("Time taken by my implementation: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
+     
+   // if (check_result(bref,X,size)==1)
+      // printf("Result is ok!\n");
+   // else    
+       // printf("Result is wrong!\n");
+     
+   print_matrix("X", X, size);
+   // print_matrix("Xref", bref, size);
+   
+   free(X);
 }
